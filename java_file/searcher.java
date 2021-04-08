@@ -153,4 +153,38 @@ public class searcher {
 		double[] arr = null;
 		return arr;
 	}
+	
+	public double[] CalcSim(KeywordList kl, HashMap hashMap, String[] title_arr) {
+		String[] key_arr = new String[kl.size()];
+		int[] value_arr = new int[kl.size()];
+		double[] result_arr = new double[title_arr.length];
+		
+		for(int i = 0; i < kl.size(); i++) {
+			Keyword kwrd = kl.get(i);
+			key_arr[i] = kwrd.getString();
+			value_arr[i] = kwrd.getCnt();
+		}
+		
+		for(double k = 0; k < title_arr.length; k++) {
+			double result = 0.0;
+			for(int i = 0; i < kl.size(); i++) {
+				Iterator<String> it = hashMap.keySet().iterator();
+				while(it.hasNext()) {
+					String post_key = it.next();
+					if(key_arr[i].equals(post_key)) {
+						ArrayList<Double> value = (ArrayList<Double>) hashMap.get(post_key);
+						for(int j = 0; j < value.size() / 2; j++) {
+							if(value.get(2 * j) == k + 1) {
+								result += value_arr[i] * value.get(2 * j + 1);
+								break;
+							}
+						}
+						break;
+					}
+				}
+			}
+			result_arr[(int) k] = result;
+		}
+		return result_arr;
+	}
 }
