@@ -149,7 +149,7 @@ public class searcher {
 		}
 	}
 	
-	public double[] CalcSim(KeywordList kl, HashMap hashMap, String[] title_arr) {
+	public double[] CalcSim2(KeywordList kl, HashMap hashMap, String[] title_arr) {
 		double[] arr = null;
 		return arr;
 	}
