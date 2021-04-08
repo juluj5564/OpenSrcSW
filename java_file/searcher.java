@@ -108,53 +108,77 @@ public class searcher {
 		KeywordExtractor ke = new KeywordExtractor();
 		KeywordList kl = ke.extractKeyword(input_args[1], true);
 		double[] result_arr = CalcSim(kl, hashMap, title_arr);
+		int print_num = 0;
 		
-		switch(result_arr.length) {
-		case 0:
-			System.out.println("No Document here");
-			break;
-		case 1:
-			System.out.println("Only 1 Document.");
-			System.out.println("So Highest title is " + title_arr[0]);
-			break;
-		case 2:
-			System.out.println("Only 2 Documents."); 
-			System.out.print("So First High title is ");
-			if(result_arr[0] >= result_arr[1]) {
-				System.out.println(title_arr[0]);
-				System.out.println("Second High title is" + title_arr[1]);
+		for(int i = 0; i < result_arr.length; i++) {
+			if(result_arr[i] != 0) {
+				print_num++;
 			}
-			else {
-				System.out.println(title_arr[1]);
-				System.out.println("Second High title is" + title_arr[0]);
-			}
-			break;
-		default:
-			for(int i = 0; i < result_arr.length; i++) {
-				for(int j = 0; j < result_arr.length - 1; j++) {
-					if(result_arr[j] < result_arr[j + 1]) {
-						double num = result_arr[j];
-						result_arr[j] = result_arr[j + 1];
-						result_arr[j + 1] = num;
-						String str = title_arr[j];
-						title_arr[j] = title_arr[j + 1];
-						title_arr[j + 1] = str;
-					}
+		}
+		
+		for(int i = 0; i < result_arr.length; i++) {
+			for(int j = 0; j < result_arr.length - 1; j++) {
+				if(result_arr[j] < result_arr[j + 1]) {
+					double num = result_arr[j];
+					result_arr[j] = result_arr[j + 1];
+					result_arr[j + 1] = num;
+					String str = title_arr[j];
+					title_arr[j] = title_arr[j + 1];
+					title_arr[j + 1] = str;
 				}
 			}
-			System.out.println("First High title is " + title_arr[0]);
-			System.out.println("Second High title is " + title_arr[1]);
-			System.out.println("Third High title is " + title_arr[2]);
-			break;
+		}
+		
+		System.out.print("If Top title in large order is ");
+		for(int i = 0; i < print_num; i++) {
+			System.out.print(title_arr[i] + "\t");
 		}
 	}
 	
-	public double[] CalcSim2(KeywordList kl, HashMap hashMap, String[] title_arr) {
-		double[] arr = null;
-		return arr;
+	public double[] CalcSim(KeywordList kl, HashMap hashMap, String[] title_arr) {
+		String[] key_arr = new String[kl.size()];
+		int[] value_arr = new int[kl.size()];
+		double[] inner_arr = InnerProduct(kl, hashMap, title_arr);
+		double[] result_arr = new double[title_arr.length];
+		
+		for(int i = 0; i < kl.size(); i++) {
+			Keyword kwrd = kl.get(i);
+			key_arr[i] = kwrd.getString();
+			value_arr[i] = kwrd.getCnt();
+		}
+		
+		for(double k = 0; k < title_arr.length; k++) {
+			double result = 0.0;
+			double Q_value = 0.0;
+			double id_value = 0.0;
+			for(int i = 0; i < kl.size(); i++) {
+				Iterator<String> it = hashMap.keySet().iterator();
+				while(it.hasNext()) {
+					String post_key = it.next();
+					if(key_arr[i].equals(post_key)) {
+						ArrayList<Double> value = (ArrayList<Double>) hashMap.get(post_key);
+						for(int j = 0; j < value.size() / 2; j++) {
+							if(value.get(2 * j) == k + 1) {
+								Q_value += value_arr[i] * value_arr[i];
+								id_value += value.get(2 * j + 1) * value.get(2 * j + 1);
+								break;
+							}
+						}
+						break;
+					}
+				}
+			}
+			if(Q_value == 0 || id_value == 0) {
+				result_arr[(int) k] = 0;
+			}
+			else {
+				result_arr[(int) k] = inner_arr[(int) k] / (Math.sqrt(Q_value) * Math.sqrt(id_value));				
+			}
+		}
+		return result_arr;
 	}
 	
-	public double[] CalcSim(KeywordList kl, HashMap hashMap, String[] title_arr) {
+	public double[] InnerProduct(KeywordList kl, HashMap hashMap, String[] title_arr) {
 		String[] key_arr = new String[kl.size()];
 		int[] value_arr = new int[kl.size()];
 		double[] result_arr = new double[title_arr.length];
@@ -183,8 +207,10 @@ public class searcher {
 					}
 				}
 			}
+			System.out.println(result);
 			result_arr[(int) k] = result;
 		}
+		
 		return result_arr;
 	}
 }
